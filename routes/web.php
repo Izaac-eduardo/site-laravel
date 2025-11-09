@@ -2,13 +2,28 @@
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-Route::get('/users', [UserController::class, 'store'])->name('users.store');
-Route::get('/users/ create', [UserController::class, 'create'])->name('users.create');
-Route::get('/users', [UserController::class, 'index'])->name('users.index');
+use App\Http\Controllers\Categ\CategoryController;
 
+// Rotas de usuários - usar resource para garantir todas as rotas RESTful
+use App\Http\Controllers\Admin\main\HomeController;
+
+// Página pública: se o usuário estiver autenticado, redireciona para /home
 Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('home');
+    }
+
     return view('welcome');
 });
+
+// Rota para a Home do painel (após login)
+Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+Route::resource('categories', CategoryController::class);
+Route::resource('users', UserController::class);
+
+// Se quiser exibir a view pública welcome, descomente a linha abaixo
+// Route::get('/', function () { return view('welcome'); });
 
 Route::get('/dashboard', function () {
     return view('dashboard');

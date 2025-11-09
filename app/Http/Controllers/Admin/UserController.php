@@ -18,8 +18,8 @@ class UserController extends Controller
       
       dd($users);
 
-      //  return view('admin.users.index', compact('users'));
-      return view('admin.users.index', compact('users'));
+        return view('admin.users.index', compact('users'));
+      
     }
 
     public function create()

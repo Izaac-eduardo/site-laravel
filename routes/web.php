@@ -3,10 +3,12 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Categ\CategoryController;
+use App\Http\Controllers\Prod\ProductController;
 
 // Rotas de usuários - usar resource para garantir todas as rotas RESTful
 use App\Http\Controllers\Admin\main\HomeController;
-
+//rota pra produtos
+Route::resource('products', ProductController::class);
 // Página pública: se o usuário estiver autenticado, redireciona para /home
 Route::get('/', function () {
     if (auth()->check()) {

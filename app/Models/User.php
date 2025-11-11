@@ -20,7 +20,9 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'password',
+    'password',
+    'cpf_cnpj',
+    'type',
     ];
 
     /**
@@ -49,5 +51,15 @@ class User extends Authenticatable
     public function isAdm(): bool
     {
         return in_array($this->email, config('custom.admins'));
+    }
+
+    public function carts()
+    {
+        return $this->hasMany(\App\Models\Cart::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(\App\Models\Order::class);
     }
 }

@@ -12,8 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Create a fresh temporary table with the desired schema
-        Schema::create('products_new', function (Blueprint $table) {
+    // Ensure no leftover temporary table exists from a previous failed run
+    Schema::dropIfExists('products_new');
+
+    // Create a fresh temporary table with the desired schema
+    Schema::create('products_new', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();
@@ -24,13 +27,25 @@ return new class extends Migration
         });
 
         // Copy data from old table to new table. Prefer 'stock' if present, fall back to 0.
-        // We avoid referencing 'estoque' directly because the DB showed inconsistent behavior.
-        DB::statement('INSERT INTO products_new (`id`, `name`, `description`, `price`, `stock`, `created_at`, `updated_at`) '
-            . 'SELECT `id`, `name`, `description`, `price`, COALESCE(`stock`, 0) as stock, `created_at`, `updated_at` FROM `products`');
+        // Only run the copy/drop if the original `products` table exists.
+        if (Schema::hasTable('products')) {
+            // We avoid referencing 'estoque' directly because the DB showed inconsistent behavior.
+            DB::statement('INSERT INTO products_new (`id`, `name`, `description`, `price`, `stock`, `created_at`, `updated_at`) '
+                . 'SELECT `id`, `name`, `description`, `price`, COALESCE(`stock`, 0) as stock, `created_at`, `updated_at` FROM `products`');
 
-        // Drop old table and rename new to products
-        Schema::drop('products');
-        Schema::rename('products_new', 'products');
+            // Drop old table and rename new to products
+            Schema::drop('products');
+        }
+
+        // Rename the new table into place (if it wasn't already)
+        if (! Schema::hasTable('products')) {
+            Schema::rename('products_new', 'products');
+        } else {
+            // If products already exists for some reason, ensure products_new is removed to avoid leftover
+            if (Schema::hasTable('products_new')) {
+                Schema::dropIfExists('products_new');
+            }
+        }
     }
 
     /**
@@ -49,11 +64,21 @@ return new class extends Migration
             $table->integer('estoque')->default(0);
         });
 
-        // Copy back (map stock -> estoque)
-        DB::statement('INSERT INTO products_old (`id`, `name`, `description`, `price`, `estoque`, `created_at`, `updated_at`) '
-            . 'SELECT `id`, `name`, `description`, `price`, COALESCE(`stock`, 0) as estoque, `created_at`, `updated_at` FROM `products`');
+        // Copy back (map stock -> estoque) only if current `products` exists
+        if (Schema::hasTable('products')) {
+            DB::statement('INSERT INTO products_old (`id`, `name`, `description`, `price`, `estoque`, `created_at`, `updated_at`) '
+                . 'SELECT `id`, `name`, `description`, `price`, COALESCE(`stock`, 0) as estoque, `created_at`, `updated_at` FROM `products`');
 
-        Schema::drop('products');
-        Schema::rename('products_old', 'products');
+            Schema::drop('products');
+        }
+
+        // Rename back
+        if (! Schema::hasTable('products')) {
+            Schema::rename('products_old', 'products');
+        } else {
+            if (Schema::hasTable('products_old')) {
+                Schema::dropIfExists('products_old');
+            }
+        }
     }
 };

@@ -11,7 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
+    // Ensure we don't fail if the table already exists from prior runs
+    Schema::dropIfExists('products');
+
+    Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
             $table->string('nome');

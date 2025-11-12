@@ -10,6 +10,10 @@ class CheckoutController extends Controller
 {
     public function index()
     {
+        if (! auth()->check()) {
+            return redirect()->route('login')->with('error','Faça login para finalizar compra');
+        }
+
         $cart = auth()->user()->carts()->with('items.product')->latest()->first();
         return view('checkout.index', compact('cart'));
     }

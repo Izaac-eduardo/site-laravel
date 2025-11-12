@@ -18,6 +18,10 @@ class CartController extends Controller
 
     public function add(Request $request)
     {
+        if (! auth()->check()) {
+            return redirect()->route('login')->with('error','Faça login para adicionar ao carrinho');
+        }
+
         $request->validate(['product_id' => 'required|exists:products,id','quantity' => 'integer|min:1']);
         $user = auth()->user();
         $cart = $user->carts()->firstOrCreate([]);
@@ -27,6 +31,10 @@ class CartController extends Controller
 
     public function remove(Request $request)
     {
+        if (! auth()->check()) {
+            return redirect()->route('login')->with('error','Faça login para editar o carrinho');
+        }
+
         $request->validate(['product_id' => 'required|exists:products,id']);
         $user = auth()->user();
         $cart = $user->carts()->latest()->first();

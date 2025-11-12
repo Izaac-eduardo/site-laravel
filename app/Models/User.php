@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * @property \Illuminate\Database\Eloquent\Collection|\App\Models\Cart[] $carts
+ * @property \Illuminate\Database\Eloquent\Collection|\App\Models\Order[] $orders
+ */
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes;
